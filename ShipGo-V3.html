@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ShipGo — Transport. Levage. Ensemble.</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f4f7fb;color:#152033}
+header{background:#0b63ce;color:#fff;padding:22px 18px}.logo{font-size:30px;font-weight:800}.tag{font-size:13px;opacity:.9}
+main{max-width:780px;margin:auto;padding:16px}.card{background:#fff;border-radius:18px;padding:18px;margin-bottom:16px;box-shadow:0 3px 14px #0000000c}
+h2{font-size:21px;margin:0 0 14px}h3{font-size:17px;margin:18px 0 10px}
+label{display:block;font-size:13px;font-weight:700;margin:11px 0 5px}
+input,select{width:100%;padding:13px;border:1px solid #ccd5e2;border-radius:10px;font-size:16px;background:#fff}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button{width:100%;border:0;border-radius:12px;padding:14px;font-size:16px;font-weight:800;background:#0b63ce;color:#fff;margin-top:15px}
+button.secondary{background:#e8f1fc;color:#0b63ce}.small{font-size:12px;color:#64748b;line-height:1.45}
+.help{background:#eef6ff;border-left:4px solid #0b63ce;padding:12px;border-radius:10px;font-size:13px;line-height:1.5}
+.choice{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.choice button{margin:0;background:#eef2f7;color:#243247;padding:11px;font-size:13px}.choice button.active{background:#0b63ce;color:#fff}
+.result{background:#0b63ce;color:#fff;border-radius:14px;padding:16px;margin-top:14px}.price{font-size:30px;font-weight:850}
+.row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #ffffff35}.row:last-child{border:0}
+.badge{display:inline-block;background:#e7f2ff;color:#0b63ce;padding:5px 8px;border-radius:999px;font-size:12px;font-weight:700}
+.ok{background:#eaf8ef;border-left:4px solid #20a05a;color:#17683b;padding:12px;border-radius:10px;margin-top:12px}
+.warn{background:#fff5e8;border-left:4px solid #e59a16;color:#79500b;padding:12px;border-radius:10px;margin-top:12px}
+.danger{background:#fff0f0;border-left:4px solid #d83a3a;color:#8a1f1f;padding:12px;border-radius:10px;margin-top:12px}
+.tabbar{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}.tabbar button{margin:0;background:#e7edf5;color:#334155}.tabbar button.active{background:#0b63ce;color:#fff}
+.company{border:1px solid #dbe3ed;border-radius:12px;padding:12px;margin-top:8px}
+footer{text-align:center;color:#718096;font-size:12px;padding:8px 0 30px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<header><div class="logo">ShipGo</div><div class="tag">Transport. Levage. Ensemble.</div></header>
+
+<main>
+<div class="tabbar">
+<button id="tabClient" class="active" onclick="showTab('client')">👤 Client</button>
+<button id="tabCarrier" onclick="showTab('carrier')">🚛 Transporteur</button>
+</div>
+
+<section id="clientTab">
+<div class="card">
+<h2>Créer un transport</h2>
+<div class="grid">
+<div><label>Départ</label><input id="from" placeholder="Ex. Magog, QC"></div>
+<div><label>Destination</label><input id="to" placeholder="Ex. Rouyn-Noranda, QC"></div>
+</div>
+<label>Marchandise</label><input id="cargo" placeholder="Ex. Foreuse DI650i">
+<div class="grid">
+<div><label>Poids total (lb)</label><input id="weight" type="number" placeholder="42000"></div>
+<div><label>Nombre de pièces</label><input id="pieces" type="number" value="1"></div>
+</div>
+<div class="grid">
+<div><label>Longueur (pi)</label><input id="length" type="number" step=".1" placeholder="38"></div>
+<div><label>Largeur (pi)</label><input id="width" type="number" step=".1" placeholder="11"></div>
+</div>
+<div class="grid">
+<div><label>Hauteur totale (pi)</label><input id="height" type="number" step=".1" placeholder="13.5"></div>
+<div><label>Hauteur du centre de gravité (pi)</label><input id="cg" type="number" step=".1" placeholder="6"></div>
+</div>
+<label>Distance routière (km)</label><input id="km" type="number" placeholder="420">
+<label>Levage requis?</label><select id="lifting"><option value="non">Non</option><option value="oui">Oui</option></select>
+<div class="help" style="margin-top:12px"><strong>🤖 Aide IA — centre de gravité</strong><br>
+Le client pourra plus tard ajouter une photo ou un plan de la machine. ShipGo pourra aider à estimer la position du centre de gravité et demander une validation professionnelle.</div>
+<button onclick="createJob()">Créer le transport</button>
+</div>
+</section>
+
+<section id="carrierTab" class="hidden">
+<div class="card">
+<h2>Profil du transporteur</h2>
+<p class="small">Ces données servent à déterminer automatiquement si un transport est compatible avec ton équipement et à calculer un prix rentable.</p>
+<label>Type de camion</label><select id="truckType"><option>Tracteur routier</option><option>Camion porteur</option><option>F-550 / classe 5-6</option><option>Autre</option></select>
+<label>Type de remorque</label><select id="trailerType"><option>Fardier / lowboy</option><option>Flatbed</option><option>Gooseneck</option><option>Remorque spécialisée</option></select>
+<div class="grid">
+<div><label>Capacité de charge (lb)</label><input id="carrierCapacity" type="number" value="50000"></div>
+<div><label>Nombre d'essieux</label><input id="axles" type="number" value="5"></div>
+</div>
+<div class="grid">
+<div><label>Longueur utile (pi)</label><input id="deckLength" type="number" value="40"></div>
+<div><label>Largeur utile (pi)</label><input id="deckWidth" type="number" value="11"></div>
+</div>
+<label>Hauteur maximale de chargement permise (pi)</label><input id="maxHeight" type="number" value="13.5">
+<h3>Coûts d'exploitation</h3>
+<div class="grid">
+<div><label>Coût réel ($/km)</label><input id="operatingCost" type="number" step=".01" value="3.10"></div>
+<div><label>Marge désirée (%)</label><input id="margin" type="number" step=".1" value="25"></div>
+</div>
+<div class="grid">
+<div><label>Minimum de facturation ($)</label><input id="carrierMinimum" type="number" value="750"></div>
+<div><label>Tarif de base ($/km)</label><input id="carrierKmRate" type="number" step=".01" value="4.50"></div>
+</div>
+<button onclick="saveCarrier()">Enregistrer mon profil</button>
+<div id="carrierSaved"></div>
+</div>
+
+<div class="card">
+<h2>⚙️ Comment ShipGo calcule</h2>
+<div class="help"><strong>Prix minimum rentable</strong><br>
+Coût du voyage + marge désirée. ShipGo compare ensuite ce montant avec le tarif au kilomètre et les surcharges liées au poids/dimensions.</div>
+<div class="help" style="margin-top:8px"><strong>Compatibilité</strong><br>
+Poids ≤ capacité de charge · longueur ≤ longueur utile · largeur ≤ largeur utile · hauteur ≤ limite configurée. Pour les limites légales réelles, les permis et les charges par essieu, une validation professionnelle reste nécessaire.</div>
+</div>
+</section>
+
+<section class="card">
+<h2>💰 Calculateur de prix ShipGo</h2>
+<div class="choice">
+<button id="modeKm" class="active" onclick="setMode('km')">$/km</button>
+<button id="modeHybrid" onclick="setMode('hybrid')">Hybride poids + km</button>
+</div>
+<div class="grid">
+<div><label>Tarif ($/km)</label><input id="rateKm" type="number" step=".01" value="4.50"></div>
+<div><label>Poids inclus (lb)</label><input id="includedWeight" type="number" value="10000"></div>
+</div>
+<label>Surcharge poids ($/tonne/km)</label><input id="weightRate" type="number" step=".01" value=".06">
+<div class="grid">
+<div><label>Attente ($)</label><input id="wait" type="number" value="0"></div>
+<div><label>Péages / permis ($)</label><input id="tolls" type="number" value="0"></div>
+</div>
+<div class="grid">
+<div><label>Levage ($)</label><input id="liftPrice" type="number" value="1650"></div>
+<div><label>Coordination ShipGo ($)</label><input id="coord" type="number" value="150"></div>
+</div>
+<button class="secondary" onclick="calculatePrice()">Mettre à jour le calcul</button>
+<div id="priceResult"></div>
+</section>
+
+<div id="jobResult"></div>
+
+<div class="card">
+<h2>🧠 Ce que ShipGo fera ensuite</h2>
+<p class="small">1. Compare le poids et les dimensions de la charge avec le profil de chaque transporteur.</p>
+<p class="small">2. Calcule le coût d'exploitation du voyage.</p>
+<p class="small">3. Ajoute la marge du transporteur.</p>
+<p class="small">4. Ajoute permis, escorte, attente et autres frais lorsque requis.</p>
+<p class="small">5. Si levage requis, trouve les entreprises de levage compatibles près du chantier.</p>
+<p class="small">6. Présente au client une offre claire et au transporteur sa marge estimée.</p>
+</div>
+<footer>Prototype ShipGo V3 — valeurs tarifaires de démonstration</footer>
+</main>
+
+<script>
+let mode='km';
+
+function v(id){return parseFloat(document.getElementById(id).value)||0}
+function money(n){return new Intl.NumberFormat('fr-CA',{style:'currency',currency:'CAD',maximumFractionDigits:0}).format(n)}
+function showTab(t){
+ document.getElementById('clientTab').classList.toggle('hidden',t!=='client');
+ document.getElementById('carrierTab').classList.toggle('hidden',t!=='carrier');
+ document.getElementById('tabClient').classList.toggle('active',t==='client');
+ document.getElementById('tabCarrier').classList.toggle('active',t==='carrier');
+}
+function setMode(m){
+ mode=m;
+ document.getElementById('modeKm').classList.toggle('active',m==='km');
+ document.getElementById('modeHybrid').classList.toggle('active',m==='hybrid');
+ calculatePrice();
+}
+function carrierProfile(){
+ return {cap:v('carrierCapacity'),axles:v('axles'),len:v('deckLength'),wid:v('deckWidth'),height:v('maxHeight'),cost:v('operatingCost'),margin:v('margin'),min:v('carrierMinimum'),rate:v('carrierKmRate')}
+}
+function saveCarrier(){
+ localStorage.setItem('shipgoCarrier',JSON.stringify(carrierProfile()));
+ document.getElementById('carrierSaved').innerHTML='<div class="ok">✅ Profil transporteur enregistré sur cet appareil.</div>';
+}
+function loadCarrier(){
+ try{
+  const p=JSON.parse(localStorage.getItem('shipgoCarrier'));
+  if(!p)return;
+  [['carrierCapacity',p.cap],['axles',p.axles],['deckLength',p.len],['deckWidth',p.wid],['maxHeight',p.height],['operatingCost',p.cost],['margin',p.margin],['carrierMinimum',p.min],['carrierKmRate',p.rate]].forEach(x=>document.getElementById(x[0]).value=x[1]);
+ }catch(e){}
+}
+function calculatePrice(){
+ const km=v('km'), w=v('weight'), p=carrierProfile();
+ const base=Math.max(v('carrierMinimum'),km*v('carrierKmRate'));
+ const tonnes=Math.max(0,(w-v('includedWeight'))/2000);
+ const surcharge=km*tonnes*v('weightRate');
+ const transport=mode==='hybrid'?base+surcharge:base;
+ const operating=km*p.cost;
+ const profitable=operating*(1+p.margin/100);
+ const extras=v('wait')+v('tolls')+(document.getElementById('lifting').value==='oui'?v('liftPrice'):0)+v('coord');
+ const recommended=Math.max(transport,profitable)+extras;
+ const margin=recommended-operating-extras;
+ document.getElementById('priceResult').innerHTML=
+ `<div class="result"><div class="badge">${mode==='hybrid'?'Mode hybride':'Mode $/km'}</div>
+ <div style="margin-top:8px"><span class="price">${money(recommended)}</span> total estimé</div>
+ <div class="row"><span>Transport</span><strong>${money(transport)}</strong></div>
+ <div class="row"><span>Coût d'exploitation</span><strong>${money(operating)}</strong></div>
+ <div class="row"><span>Prix minimum avec marge</span><strong>${money(profitable)}</strong></div>
+ <div class="row"><span>Extras</span><strong>${money(extras)}</strong></div>
+ <div class="row"><span>Marge estimée après coûts</span><strong>${money(margin)}</strong></div></div>`;
+}
+function createJob(){
+ const w=v('weight'),len=v('length'),wid=v('width'),h=v('height'),p=carrierProfile();
+ let issues=[];
+ if(w&&p.cap&&w>p.cap)issues.push('Poids supérieur à la capacité configurée du transporteur.');
+ if(len&&p.len&&len>p.len)issues.push('Longueur supérieure à la plateforme.');
+ if(wid&&p.wid&&wid>p.wid)issues.push('Largeur supérieure à la plateforme.');
+ if(h&&p.height&&h>p.height)issues.push('Hauteur supérieure à la limite configurée.');
+ let compat=issues.length?`<div class="danger"><strong>⚠️ Compatibilité à vérifier</strong><br>${issues.join('<br>')}</div>`:`<div class="ok"><strong>✅ Compatible avec le profil configuré</strong><br>Les dimensions et le poids respectent les limites saisies. Cela ne remplace pas une vérification légale.</div>`;
+ const from=document.getElementById('from').value||'Départ',to=document.getElementById('to').value||'Destination',cargo=document.getElementById('cargo').value||'Marchandise',km=v('km'),cg=v('cg');
+ document.getElementById('jobResult').innerHTML=`<section class="card"><h2>Transport créé</h2><span class="badge">${cargo}</span>
+ <p><strong>${from}</strong> → <strong>${to}</strong></p><p>${w.toLocaleString('fr-CA')} lb · ${km.toLocaleString('fr-CA')} km · ${v('pieces')||1} pièce(s)</p>
+ <p>${len} × ${wid} × ${h} pi · centre de gravité: ${cg||'non indiqué'} pi</p>${compat}
+ <h3>Entreprises de levage suggérées</h3>
+ <div class="company"><strong>Grues Estrie</strong>12 km · à confirmer</div>
+ <div class="company"><strong>Levage Québec</strong>28 km · à confirmer</div>
+ <div class="company"><strong>Grues Nord</strong>34 km · à confirmer</div>
+ <button onclick="alert('Offre prête à être envoyée au client.')">Envoyer l'offre</button></section>`;
+ calculatePrice();
+ window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+}
+loadCarrier(); calculatePrice();
+</script>
+</body>
+</html>
